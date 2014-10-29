@@ -695,14 +695,16 @@ SamplePlayer::executeSampleRole( PlayerAgent * agent )
     // I have the ball, what to do?
     if ( kickable && !Opponenthasball)
     {
-        doKick( this);
+        player = ClosestPlayerToBall(this)
+        doKick( player);
                        
     }
 
     //This is for off the ball movement which attacking, where to go for passes etc.
     else if (!kickable && !Opponenthasball)
     {   
-        doMove(this);
+        player = ClosestPlayerToBall(this)
+        doMove(player);
         return true;
     } 
     //ATTACK ENDS HERE
@@ -730,7 +732,8 @@ SamplePlayer::executeSampleRole( PlayerAgent * agent )
         // I don't have the ball, opponent has it, off the ball movement while defending.
         //falling back etc.     
         else if (!kickable && Opponenthasball){
-            Bhv_BasicMove().execute(agent);
+            //Bhv_BasicMove().execute(agent);
+            fallback(this)
         }
         return true;
     };
@@ -767,6 +770,19 @@ SamplePlayer::doMove( PlayerAgent * agent )
 {
         Bhv_BasicMove().execute(agent);
         return;
+}
+
+void
+SamplePlayer::fallback(PlayerAgent * agent){
+    const WorldModel & wm = agent->world();
+    double my_pos = wm.self().pos();
+    const ball_pos = wm.ball().pos()
+    if( my_pos > ball_pos ){
+        agent->setNeckAction( new Neck_TurnToBall() );
+
+    }
+    
+
 }
 
 bool
@@ -841,7 +857,6 @@ SamplePlayer::BasicMove(PlayerAgent * agent){
 
     return true;
 }
-
 
 
 
