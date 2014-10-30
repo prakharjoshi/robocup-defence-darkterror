@@ -734,6 +734,7 @@ SamplePlayer::executeSampleRole( PlayerAgent * agent )
         else if (!kickable && Opponenthasball){
             //Bhv_BasicMove().execute(agent);
             fallback(this)
+            clearball(this)
         }
         return true;
     };
@@ -772,11 +773,12 @@ SamplePlayer::doMove( PlayerAgent * agent )
         return;
 }
 
+//function for a player to fall back
 void
 SamplePlayer::fallback(PlayerAgent * agent){
     const WorldModel & wm = agent->world();
     double my_pos = wm.self().pos();
-    const ball_pos = wm.ball().pos()
+    const ball_pos = wm.ball().pos();
     if( my_pos > ball_pos ){
         agent->setNeckAction( new Neck_TurnToBall() );
 
@@ -784,6 +786,43 @@ SamplePlayer::fallback(PlayerAgent * agent){
     
 
 }
+
+//function for player to clear ball
+void
+SamplePlayer::clearball(PlayerAgent * agent){
+    const WorldModel & wm = agent->world();
+    double ball_pos = wm.self.pos();
+    if(ball_pos < -25)    // it means ball is in our half near to our goalpost
+    {
+       player = ClosestPlayerToBall(this); 
+       doKick(player);
+    }
+
+}
+
+/*
+void
+SamplePlayer::defencemove(PlayerAgent * agent){
+    const WorldModel & wm = agent->world();
+    double ball_pos = wm.self.pos()
+    double my_pos = wm.self.pos()
+    if(ball_pos < 0)    //if ball is in our half
+    {
+        if(my_pos > 0)  //if player is in oppossite half then bring it back
+        {
+           agent->setNeckAction( new Neck_TurnToBall() ); 
+        }
+        else if( -25 < my_pos < 0)
+        {
+            doMove(this)
+        }
+        else
+        {
+
+        }
+    }
+
+}*/
 
 bool
 SamplePlayer::BasicMove(PlayerAgent * agent){
