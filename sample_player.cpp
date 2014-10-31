@@ -724,7 +724,8 @@ SamplePlayer::executeSampleRole( PlayerAgent * agent )
             return true;
             }
 
-            Bhv_BasicOffensiveKick().execute( agent );
+            //Bhv_BasicOffensiveKick().execute( agent );
+            clearball(this)
             return true;
 
             }
@@ -734,7 +735,7 @@ SamplePlayer::executeSampleRole( PlayerAgent * agent )
         else if (!kickable && Opponenthasball){
             //Bhv_BasicMove().execute(agent);
             fallback(this)
-            clearball(this)
+            //clearball(this)
         }
         return true;
     };
@@ -777,8 +778,8 @@ SamplePlayer::doMove( PlayerAgent * agent )
 void
 SamplePlayer::fallback(PlayerAgent * agent){
     const WorldModel & wm = agent->world();
-    double my_pos = wm.self().pos();
-    const ball_pos = wm.ball().pos();
+    double my_pos = wm.self().pos().x;
+    const ball_pos = wm.ball().pos().x;
     if( my_pos > ball_pos ){
         agent->setNeckAction( new Neck_TurnToBall() );
 
@@ -791,7 +792,7 @@ SamplePlayer::fallback(PlayerAgent * agent){
 void
 SamplePlayer::clearball(PlayerAgent * agent){
     const WorldModel & wm = agent->world();
-    double ball_pos = wm.self.pos();
+    double ball_pos = wm.ball().pos().x;
     if(ball_pos < -25)    // it means ball is in our half near to our goalpost
     {
        player = ClosestPlayerToBall(this); 
