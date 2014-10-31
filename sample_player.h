@@ -181,6 +181,12 @@ public:
     bool
     PassToBestPlayer(rcsc::PlayerAgent * agent);
 
+    void 
+    fallback(rcsc::PlayerAgent * agent);
+
+    void 
+    clearball(rcsc::PlayerAgent * agent);
+
     bool
     PassToPlayer( rcsc::PlayerAgent * agent, rcsc::Vector2D target_point, int receiver );
 
@@ -224,6 +230,7 @@ private:
     bool doShoot();
     bool doForceKick();
     bool doHeardPassReceive();
+
 
 public:
     virtual

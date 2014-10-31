@@ -695,16 +695,16 @@ SamplePlayer::executeSampleRole( PlayerAgent * agent )
     // I have the ball, what to do?
     if ( kickable && !Opponenthasball)
     {
-        player = ClosestPlayerToBall(this)
-        doKick( player);
+        //player = ClosestPlayerToBall(this)
+        doKick( agent);
                        
     }
 
     //This is for off the ball movement which attacking, where to go for passes etc.
     else if (!kickable && !Opponenthasball)
     {   
-        player = ClosestPlayerToBall(this)
-        doMove(player);
+        //player = ClosestPlayerToBall(this)
+        doMove(agent);
         return true;
     } 
     //ATTACK ENDS HERE
@@ -725,7 +725,7 @@ SamplePlayer::executeSampleRole( PlayerAgent * agent )
             }
 
             //Bhv_BasicOffensiveKick().execute( agent );
-            clearball(this)
+            clearball(this);
             return true;
 
             }
@@ -734,7 +734,7 @@ SamplePlayer::executeSampleRole( PlayerAgent * agent )
         //falling back etc.     
         else if (!kickable && Opponenthasball){
             //Bhv_BasicMove().execute(agent);
-            fallback(this)
+            fallback(this);
             //clearball(this)
         }
         return true;
@@ -778,10 +778,13 @@ SamplePlayer::doMove( PlayerAgent * agent )
 void
 SamplePlayer::fallback(PlayerAgent * agent){
     const WorldModel & wm = agent->world();
-    double my_pos = wm.self().pos().x;
-    const ball_pos = wm.ball().pos().x;
-    if( my_pos > ball_pos ){
+    double my_pos_x = wm.self().pos().x;
+    double ball_pos_x = wm.ball().pos().x;
+    double ball_pos_y = wm.ball().pos().y;
+    const Vector2D ball_pos = Vector2D(ball_pos_x,ball_pos_y);
+    if( my_pos_x > ball_pos_x ){
         agent->setNeckAction( new Neck_TurnToBall() );
+        Body_GoToPoint(ball_pos,0.5,ServerParam::i().maxDashPower()).execute(agent);
 
     }
     
@@ -793,10 +796,10 @@ void
 SamplePlayer::clearball(PlayerAgent * agent){
     const WorldModel & wm = agent->world();
     double ball_pos = wm.ball().pos().x;
-    if(ball_pos < -25)    // it means ball is in our half near to our goalpost
+    if(ball_pos < -15)    // it means ball is in our half near to our goalpost
     {
-       player = ClosestPlayerToBall(this); 
-       doKick(player);
+       //int player = ClosestPlayerToBall(this); 
+       doKick(agent);
     }
 
 }
