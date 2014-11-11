@@ -695,16 +695,19 @@ SamplePlayer::executeSampleRole( PlayerAgent * agent )
     // I have the ball, what to do?
     if ( kickable && !Opponenthasball)
     {
-        //player = ClosestPlayerToBall(this)
-        doKick( agent);
+        //int player = ClosestPlayerToBall(agent);
+        //agent -> world().ourPlayer(player);
+        BasicMove(agent);
+        //doKick( agent);
                        
     }
 
     //This is for off the ball movement which attacking, where to go for passes etc.
     else if (!kickable && !Opponenthasball)
     {   
-        //player = ClosestPlayerToBall(this)
-        doMove(agent);
+        //int player = ClosestPlayerToBall(agent);
+        //agent -> world().ourPlayer(player);
+        SampleDribble(agent);
         return true;
     } 
     //ATTACK ENDS HERE
@@ -725,7 +728,11 @@ SamplePlayer::executeSampleRole( PlayerAgent * agent )
             }
 
             //Bhv_BasicOffensiveKick().execute( agent );
-            clearball(this);
+            //int player = ClosestPlayerToBall(agent);
+            //agent -> world().ourPlayer(player);
+            clearball(agent);
+            
+            
             return true;
 
             }
@@ -734,8 +741,10 @@ SamplePlayer::executeSampleRole( PlayerAgent * agent )
         //falling back etc.     
         else if (!kickable && Opponenthasball){
             //Bhv_BasicMove().execute(agent);
-            fallback(this);
+            fallback(agent);
+            //doKick(agent);
             //clearball(this)
+            //defencemove(agent);
         }
         return true;
     };
@@ -782,11 +791,9 @@ SamplePlayer::fallback(PlayerAgent * agent){
     double ball_pos_x = wm.ball().pos().x;
     double ball_pos_y = wm.ball().pos().y;
     const Vector2D ball_pos = Vector2D(ball_pos_x,ball_pos_y);
-    if( my_pos_x > ball_pos_x ){
-        agent->setNeckAction( new Neck_TurnToBall() );
-        Body_GoToPoint(ball_pos,0.5,ServerParam::i().maxDashPower()).execute(agent);
+    chaseball(agent);
+    
 
-    }
     
 
 }
@@ -796,7 +803,7 @@ void
 SamplePlayer::clearball(PlayerAgent * agent){
     const WorldModel & wm = agent->world();
     double ball_pos = wm.ball().pos().x;
-    if(ball_pos < -15)    // it means ball is in our half near to our goalpost
+    if(ball_pos < -20)    // it means ball is in our half near to our goalpost
     {
        //int player = ClosestPlayerToBall(this); 
        doKick(agent);
@@ -804,25 +811,106 @@ SamplePlayer::clearball(PlayerAgent * agent){
 
 }
 
+bool
+SamplePlayer::tackle(PlayerAgent * agent){
+    // tackle
+    if ( Bhv_BasicTackle( 0.8, 80.0 ).execute( agent ) )
+    {
+        return true;
+    }
+}
+
+bool
+SamplePlayer::chaseball(PlayerAgent * agent){
+    const WorldModel & wm = agent->world();
+    
+    // chase ball
+    const int self_min = wm.interceptTable()->selfReachCycle();
+    const int mate_min = wm.interceptTable()->teammateReachCycle();
+    const int opp_min = wm.interceptTable()->opponentReachCycle();
+
+    if ( ! wm.existKickableTeammate()
+         && ( self_min <= 3
+              || ( self_min <= mate_min
+                   && self_min < opp_min + 3 )
+              )
+         )
+    {
+        Body_Intercept().execute( agent );
+        agent->setNeckAction( new Neck_OffensiveInterceptNeck() );
+
+        return true;
+    }
+
+
+
+    const Vector2D target_point = Strategy::i().getPosition( wm.self().unum() );
+
+    const double dash_power = Strategy::get_normal_dash_power( wm );
+
+    double dist_thr = wm.ball().distFromSelf() * 0.1;
+    if ( dist_thr < 1.0 ) dist_thr = 1.0;
+
+    agent->debugClient().addMessage( "BasicMove%.0f", dash_power );
+    agent->debugClient().setTarget( target_point );
+    agent->debugClient().addCircle( target_point, dist_thr );
+    
+    
+    if ( ! Body_GoToPoint( target_point, dist_thr, dash_power
+                           ).execute( agent ) )
+    {
+        Body_TurnToBall().execute( agent );
+    }
+
+    if ( wm.existKickableOpponent()
+         && wm.ball().distFromSelf() < 18.0 )
+    {
+
+      /*
+        If the ball is with opponent team then intercept the ball.
+        Accordingly team with the shortest distance will approach for ball.
+      */
+        agent->setNeckAction( new Neck_TurnToBall() );
+    }
+    else
+    {
+        agent->setNeckAction( new Neck_TurnToBallOrScan() );
+    }
+}
+
+
+
 /*
 void
 SamplePlayer::defencemove(PlayerAgent * agent){
     const WorldModel & wm = agent->world();
-    double ball_pos = wm.self.pos()
-    double my_pos = wm.self.pos()
+    double ball_pos_x = wm.ball().pos().x;
+    double ball_pos_y = wm.ball().pos().y;
+    const Vector2D ball_pos = Vector2D(ball_pos_x,ball_pos_y);
+    double my_pos = wm.self().pos();
     if(ball_pos < 0)    //if ball is in our half
     {
-        if(my_pos > 0)  //if player is in oppossite half then bring it back
-        {
-           agent->setNeckAction( new Neck_TurnToBall() ); 
-        }
-        else if( -25 < my_pos < 0)
-        {
-            doMove(this)
-        }
-        else
-        {
+        //here we have to put two or three player of our team in the deep towards our goal 
+        //so that if other players miss the ball while performing their action then we have
+        // a backup.  
 
+        int player = ClosestPlayerToBall(agent);
+        if (player == 2 || player == 3 || player == 4){
+            agent -> world().ourPlayer(player);
+            const Vector2D defense_area = Vector2D(-15,0);
+            if (wm.self().pos().x > -25){
+                agent->setNeckAction( new Neck_TurnToBall() );
+                Body_GoToPoint(defence_area,1,ServerParam::i().maxDashPower()).execute(agent);
+            }
+
+        }
+        else if(player == 5 || player == 6 || player == 7){
+            agent -> world().ourPlayer(Player);
+            const Vector2D defense_area = Vector2D(-15,0);
+            if(wm.self().pos().x > 0){
+                agent->setNeckAction( new Neck_TurnToBall() );
+                Body_GoToPoint(defense_area,1,ServerParam::i().maxDashPower()).execute(agent);
+            }
         }
     }
 

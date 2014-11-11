@@ -187,6 +187,15 @@ public:
     void 
     clearball(rcsc::PlayerAgent * agent);
 
+    void
+    defencemove(PlayerAgent * agent);
+
+    bool
+    tackle(PlayerAgent * agent);
+
+    bool
+    chaseball(PlayerAgent * agent);
+
     bool
     PassToPlayer( rcsc::PlayerAgent * agent, rcsc::Vector2D target_point, int receiver );
 
