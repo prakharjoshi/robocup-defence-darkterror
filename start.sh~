@@ -9,7 +9,7 @@ echo " All rights reserved."
 echo "******************************************************************"
 
 
-LIBPATH=@LIBRCSCLIB@
+LIBPATH=/usr/local/lib
 if [ x"$LIBPATH" != x ]; then
   if [ x"$LD_LIBRARY_PATH" = x ]; then
     LD_LIBRARY_PATH=$LIBPATH
@@ -23,7 +23,7 @@ DIR=`dirname $0`
 
 player="${DIR}/sample_player"
 coach="${DIR}/sample_coach"
-teamname="darkterror"
+teamname="HELIOS_base"
 host="localhost"
 port=6000
 coach_port=""

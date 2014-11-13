@@ -54,9 +54,10 @@ using namespace rcsc;
 bool
 Bhv_BasicTackle::execute( PlayerAgent * agent )
 {
+  
     const ServerParam & SP = ServerParam::i();
     const WorldModel & wm = agent->world();
-
+double tackle_power = SP.maxTacklePower();
     bool use_foul = false;
     double tackle_prob = wm.self().tackleProbability();
 
@@ -119,6 +120,8 @@ Bhv_BasicTackle::execute( PlayerAgent * agent )
          )
     {
         // try tackle
+        agent->doTackle( tackle_power );
+        agent->setNeckAction( new Neck_TurnToBallOrScan() );
     }
     else
     {

@@ -94,6 +94,8 @@
 #include <rcsc/param/param_map.h>
 #include <rcsc/param/cmd_line_parser.h>
 
+#include <chain_action/clear_ball.h>
+
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -791,8 +793,11 @@ SamplePlayer::fallback(PlayerAgent * agent){
     double ball_pos_x = wm.ball().pos().x;
     double ball_pos_y = wm.ball().pos().y;
     const Vector2D ball_pos = Vector2D(ball_pos_x,ball_pos_y);
+    if(ball_pos_x<10)
+    {
     chaseball(agent);
-    
+    defencemove(agent);
+    }
 
     
 
@@ -803,11 +808,37 @@ void
 SamplePlayer::clearball(PlayerAgent * agent){
     const WorldModel & wm = agent->world();
     double ball_pos = wm.ball().pos().x;
-    if(ball_pos < -20)    // it means ball is in our half near to our goalpost
+    
+
+    if(ball_pos < -15)    // it means ball is in our half near to our goalpost
     {
        //int player = ClosestPlayerToBall(this); 
-       doKick(agent);
+       /* if(tackle(agent))
+       {
+       if(doForceKick())
+       {
+        std::cout << "player: has called the force kick action and ball cleared ------------------"<<std::endl;
+        return;
+        }
+        else{
+            agent->setNeckAction(new Neck_TurnToBallOrScan());
+        }
+    }*/
+    if(tackle(agent))
+    {
+        doKick(agent);
     }
+
+    else
+
+    {
+        doKick(agent);
+       // if(!doForceKick())
+    Body_TurnToBall().execute( agent );
+
+
+    };
+}
 
 }
 
@@ -815,7 +846,8 @@ bool
 SamplePlayer::tackle(PlayerAgent * agent){
     // tackle
     if ( Bhv_BasicTackle( 0.8, 80.0 ).execute( agent ) )
-    {
+    {   
+        std::cout << "tackling currently"<<std::endl;
         return true;
     }
 }
@@ -880,41 +912,78 @@ SamplePlayer::chaseball(PlayerAgent * agent){
 
 
 
-/*
+
 void
 SamplePlayer::defencemove(PlayerAgent * agent){
     const WorldModel & wm = agent->world();
     double ball_pos_x = wm.ball().pos().x;
     double ball_pos_y = wm.ball().pos().y;
     const Vector2D ball_pos = Vector2D(ball_pos_x,ball_pos_y);
-    double my_pos = wm.self().pos();
-    if(ball_pos < 0)    //if ball is in our half
+    //double my_pos = wm.self().pos();
+    if(ball_pos_x < 0)    //if ball is in our half
     {
         //here we have to put two or three player of our team in the deep towards our goal 
         //so that if other players miss the ball while performing their action then we have
         // a backup.  
 
-        int player = ClosestPlayerToBall(agent);
-        if (player == 2 || player == 3 || player == 4){
+       int player = ClosestPlayerToBall(agent);
+        
+        if (player == 2 || player == 3 || player == 4 || player==6){
             agent -> world().ourPlayer(player);
-            const Vector2D defense_area = Vector2D(-15,0);
+            //const Vector2D defense_area &;
+            double pos_x;
+            double pos_y;
+            if(player ==6)
+                 pos_x=-47.5;
+                pos_y=0;
+            // defense_area= Vector2D(-45,0);
+            if(player==2)
+                 pos_x=-45;
+                pos_y=12;
+                //defense_area=Vector2D(-45,6);
+            if(player==3)
+                 pos_x=-45;
+                pos_y=-12;
+                //defense_area=Vector2D(-45.-6);
             if (wm.self().pos().x > -25){
                 agent->setNeckAction( new Neck_TurnToBall() );
-                Body_GoToPoint(defence_area,1,ServerParam::i().maxDashPower()).execute(agent);
+                Body_GoToPoint(Vector2D(pos_x,pos_y),0.5,ServerParam::i().maxDashPower()*(1)).execute(agent);
             }
 
         }
-        else if(player == 5 || player == 6 || player == 7){
-            agent -> world().ourPlayer(Player);
-            const Vector2D defense_area = Vector2D(-15,0);
+        else if(player == 5 || player == 6 || player == 7 || player ==9 || player ==4){
+          //  const Vector2D defense_area & ;
+            agent -> world().ourPlayer(player);
+            const ServerParam & SP = ServerParam::i();
+            const double siri =SP.pitchHalfWidth();
+             double pos_x;
+            double pos_y;
+            if(player==4)
+                pos_x=-47.5;
+                pos_y=siri/2+6;
+            //defense_area= Vector2D(-25,siri-6);
+            if(player==5)
+                pos_x=-47.5;
+                pos_y=(siri/2)*-1 + (6);
+                //defense_area=Vector2D(-25,-siri+6);
+            if(player==7)
+                pos_x=-25;
+                pos_y=siri/2;
+                //defense_area=Vector2D(-25,siri/2);
+            if(player==9)
+                pos_x=-25;
+                pos_y=(siri/2)*-1;
+                //defense_area=Vector2D(-25,-(siri/2));
             if(wm.self().pos().x > 0){
                 agent->setNeckAction( new Neck_TurnToBall() );
-                Body_GoToPoint(defense_area,1,ServerParam::i().maxDashPower()).execute(agent);
+                Body_GoToPoint(Vector2D(pos_x,pos_y),1,ServerParam::i().maxDashPower() *(0.8)).execute(agent);
+            
             }
-        }
+        
     }
+  }  
 
-}*/
+}
 
 bool
 SamplePlayer::BasicMove(PlayerAgent * agent){
