@@ -117,7 +117,7 @@ public:
     rcsc::Vector2D PrevOccupied;
 
     bool Opponenthasball;
-
+    int counter;
     std::string lastRole;
 
     int
@@ -125,6 +125,9 @@ public:
 
     bool
     FoundNewBH;
+
+    bool
+    zoned;
 
 
     bool 
@@ -152,9 +155,14 @@ public:
 
     rcsc::Vector2D 
     RoundToNearestTens(rcsc::Vector2D P);
+
+
     
     int
     ClosestPlayerToBall(rcsc::PlayerAgent * agent);
+
+    rcsc::PlayerAgent *
+    findClosestZonePlayer(rcsc::PlayerAgent *agent,double x, double y,double buffer);
 
     bool 
     isRTaHole(rcsc::Vector2D P);
@@ -190,11 +198,19 @@ public:
     void
     defencemove(PlayerAgent * agent);
 
+    void
+    centralmark(PlayerAgent * agent);
+
     bool
     tackle(PlayerAgent * agent);
 
     bool
     chaseball(PlayerAgent * agent);
+    
+    void
+    zonethem(PlayerAgent * agent);
+    void 
+    ClosestPlayerToZone(PlayerAgent *agent);
 
     bool
     PassToPlayer( rcsc::PlayerAgent * agent, rcsc::Vector2D target_point, int receiver );
@@ -229,6 +245,7 @@ public:
 
     bool
     executeDefense( rcsc::PlayerAgent * agent );
+
 
 
 private:
