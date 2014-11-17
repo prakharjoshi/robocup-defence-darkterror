@@ -129,6 +129,9 @@ public:
     bool
     zoned;
 
+    bool
+    fall;
+
 
     bool 
     executeSampleRole( rcsc::PlayerAgent * agent );
@@ -156,13 +159,18 @@ public:
     rcsc::Vector2D 
     RoundToNearestTens(rcsc::Vector2D P);
 
+    bool
+    didwecheck;
+
+    int
+    rb,rcb,cb,lcb,lb;
 
     
     int
     ClosestPlayerToBall(rcsc::PlayerAgent * agent);
 
-    rcsc::PlayerAgent *
-    findClosestZonePlayer(rcsc::PlayerAgent *agent,double x, double y,double buffer);
+    int
+    findClosestZonePlayer(rcsc::PlayerAgent *agent,double x, double y,double buffer1,double buffer2);
 
     bool 
     isRTaHole(rcsc::Vector2D P);
