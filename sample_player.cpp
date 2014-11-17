@@ -116,10 +116,10 @@ SamplePlayer::SamplePlayer()
 {
     boost::shared_ptr< AudioMemory > audio_memory( new AudioMemory );
 
-    //zoned=false;
+    //rb,rcb,cb,lcb,lb;
     counter=0;
     M_worldmodel.setAudioMemory( audio_memory );
-
+    std::cout<<"pleaseeeeeeeeeeeeeeeeeeeeeeeeeeeee+++{}{}{}{}{}{}{}{++++}{}{"<<std::endl;
     //
     // set communication message parser
     //
@@ -652,23 +652,24 @@ SamplePlayer::ClosestPlayerToBall(PlayerAgent * agent){
     return mindisunum;
 }
 
-PlayerAgent *
-SamplePlayer::findClosestZonePlayer(PlayerAgent *agent,double x, double y,double buffer)
+int
+SamplePlayer::findClosestZonePlayer(PlayerAgent *agent,double x, double y,double buffer1,double buffer2)
 {
     int mindisunum=-1;
     int mindis=999;
 
      for(int i=2; i<=11; i++){
         if(agent->world().ourPlayer(i)!=NULL){
-            if(agent->world().ourPlayer(i)->pos().dist(Vector2D(x,y)) < mindis && agent->world().ourPlayer(i)->pos().y >buffer){
+            if(agent->world().ourPlayer(i)->pos().dist(Vector2D(x,y)) < mindis && agent->world().ourPlayer(i)->pos().y >buffer1 && agent->world().ourPlayer(i)->pos().y <buffer2){
                 mindis = agent->world().ourPlayer(i)->pos().dist(Vector2D(x,y));
                  mindisunum= i;
             }
             //agent=agent->world().ourPlayer(i);
         
         }
-        return agent;
+        
     }
+    return mindisunum;
 }
 
 void
@@ -680,7 +681,7 @@ SamplePlayer::ClosestPlayerToZone(PlayerAgent *agent)
     double y = wm.ball().pos().y;
     int mindis=999;
 
-    int rb=-1,rcb=-1,cb=-1,lcb=-1,lb=-1;
+    //int rb=-1,rcb=-1,cb=-1,lcb=-1,lb=-1;
     const ServerParam & SP = ServerParam::i();
      double siri =SP.pitchHalfWidth();
      double halfpen=SP.penaltyAreaHalfWidth();
@@ -693,25 +694,61 @@ SamplePlayer::ClosestPlayerToZone(PlayerAgent *agent)
     const Vector2D z4= Vector2D(-(pitchlen-goallen),goalhal);
     const Vector2D z5= Vector2D(-pitchlen,halfpen);
     // int player;
-   agent= findClosestZonePlayer(agent,-(pitchlen)/2+10,-siri,-siri);
-               Body_GoToPoint( z1, 0.0, ServerParam::i().maxDashPower()).execute(agent);
-               //std::cout<<"going to z1 with"<<wm.self().unum()<<std::endl;
-
-    agent= findClosestZonePlayer(agent,-(pitchlen)/2+10,-halfpen,-halfpen);
-                   Body_GoToPoint( z2, 0.0, ServerParam::i().maxDashPower()).execute(agent);
-                   //std::cout<<"going to z2 with"<<wm.self().unum()<<std::endl;
-
-    agent= findClosestZonePlayer(agent,-(pitchlen)/2+10,-goalhal,-goalhal);
-                   Body_GoToPoint( z3, 0.0, ServerParam::i().maxDashPower()).execute(agent);
+    if(didwecheck)
+    {
+   rb= findClosestZonePlayer(agent,-(pitchlen)/2+10,-siri,-siri,-halfpen);
+   rcb= findClosestZonePlayer(agent,-(pitchlen)/2+10,-halfpen,-halfpen,-goalhal);
+   cb= findClosestZonePlayer(agent,-(pitchlen)/2+10,-goalhal,-goalhal,0);
+    lcb= findClosestZonePlayer(agent,-(pitchlen)/2+10,goalhal,0,halfpen);
+     lb= findClosestZonePlayer(agent,-(pitchlen)/2+10,halfpen,halfpen,siri);
+    //std::cout<<"rb "<<rb<<"rcb "<<rcb<<"cb "<<cb<<"lcb "<<lcb<<"lb "<<lb<<std::endl;
+    if(lb==-1)
+        lb=4;
+    if(rb=-1)
+        rb=5;
+    if(rb==rcb && rcb==5)
+    {
+        rb=5;
+        rcb=3;
+        //lcb=6;
+    }
+    if(cb==-1)
+    {
+        cb==6;
+    }
+   
 
     
-    agent= findClosestZonePlayer(agent,-(pitchlen)/2+10,goalhal,goalhal);
+std::cout<<"rb "<<rb<<"rcb "<<rcb<<"cb "<<cb<<"lcb "<<lcb<<"lb "<<lb<<std::endl;
+ }              
+                int hummels=agent->world().self().unum();
+                if(cb!=-1 && hummels==cb)
+                    {
+                        agent->world().ourPlayer(cb);
+                   Body_GoToPoint( z3, 0.0, ServerParam::i().maxDashPower()).execute(agent);
+                    }
+                if(rb!=-1 && hummels==rb)
+                {
+                agent->world().ourPlayer(rb);
+                 Body_GoToPoint( z1, 0.0, ServerParam::i().maxDashPower()).execute(agent);
+                }
+                
+                    if(rcb!=-1 && hummels==rcb)
+                    {
+    
+                    agent->world().ourPlayer(rcb);
+                   Body_GoToPoint( z2, 0.0, ServerParam::i().maxDashPower()).execute(agent);
+               }
+               if(lcb!=-1 && hummels==lcb)
+               {
+                   agent->world().ourPlayer(lcb);
                    Body_GoToPoint( z4, 0.0, ServerParam::i().maxDashPower()).execute(agent);
-
-
-    agent= findClosestZonePlayer(agent,-(pitchlen)/2+10,halfpen,halfpen);
+                }
+                if(lb=-1 && hummels==lb)
+                {
+                agent->world().ourPlayer(lb);
                Body_GoToPoint( z5, 0.0, ServerParam::i().maxDashPower()).execute(agent);
-   
+                }
     // std::cout<<"this is the agent selected "<<agent->world().self().unum()<<" "<<std::endl;
 
     //  for(int i=2; i<=11; i++){
@@ -762,6 +799,12 @@ SamplePlayer::ClosestPlayerToZone(PlayerAgent *agent)
 bool
 SamplePlayer::executeSampleRole( PlayerAgent * agent )
 {   
+//     if(agent->world().gameMode().type() == GameMode::BeforeKickOff ||agent->world().gameMode().type() == GameMode::KickOff_)
+//     {
+//        zoned=true;
+//         std::cout<<"yes enttering this zoned "<<zoned<<"lolaa"<<std::endl;
+//      }   
+
     if(agent->config().teamName()=="opp"){
         Body_GoToPoint( Vector2D(-50,0), 0.0, ServerParam::i().maxDashPower(), -1, 4, true, 60).execute( agent );
         return true;
@@ -808,13 +851,16 @@ SamplePlayer::executeSampleRole( PlayerAgent * agent )
     // I have the ball, what to do?
     if ( kickable && !Opponenthasball)
     {   
+        zoned=true;
+        counter=0;
+        didwecheck=true;
         // if(counter==0)
         // {
         //     defencemove(agent);
         //     //fallback(agent);
         //     std::cout<<"yes enttering this zone"<<std::endl;
         //     counter++;
-        // }
+        // // }
         agent->setNeckAction(new Neck_TurnToBall());
         Bhv_BasicMove().execute(agent);
         doKick(agent);
@@ -837,14 +883,16 @@ SamplePlayer::executeSampleRole( PlayerAgent * agent )
     }
     //This is for off the ball movement which attacking, where to go for passes etc.
     else if (!kickable && !Opponenthasball)
-    {   
+    {           
            agent->setNeckAction(new Neck_TurnToBall());
             Body_TurnToBall().execute(agent);
-
+            counter=0;
         const PlayerObject * nearest_opp= agent->world().getOpponentNearestToBall( 10 );
         const Vector2D nearest_opp_pos=nearest_opp->pos();
         double thrs= nearest_opp_pos.dist(agent->world().ball().pos());
             //doMove(agent);
+            zoned=false;
+            didwecheck=false;
             if(thrs < 10)
             {
                 
@@ -869,6 +917,9 @@ SamplePlayer::executeSampleRole( PlayerAgent * agent )
         //Uncomment this for defense.
         //If I can kick the ball, but opponent has it. Common ball.
         if (kickable && Opponenthasball){
+            zoned=false;
+            counter=0;
+            didwecheck=false;
             agent->setNeckAction(new Neck_TurnToBall());
             Body_TurnToBall().execute(agent);
 
@@ -896,9 +947,16 @@ SamplePlayer::executeSampleRole( PlayerAgent * agent )
         // I don't have the ball, opponent has it, off the ball movement while defending.
         //falling back etc.     
         else if (!kickable && Opponenthasball){
-            //Bhv_BasicMove().execute(agent);
+            Bhv_BasicMove().execute(agent);
                         //centralmark(agent);
             //std::cout<<"opponent has ball"<<std::endl;
+            if(counter==0)
+            {
+                didwecheck=true;
+            zoned=true;
+            counter++;
+            std::cout<<"so counter has been incremented++++++"<<counter<<std::endl;
+            }
             agent->setNeckAction(new Neck_TurnToBall());
             Body_TurnToBall().execute(agent);
             
@@ -907,6 +965,7 @@ SamplePlayer::executeSampleRole( PlayerAgent * agent )
             
 
             fallback(agent);
+            didwecheck=false;
             // if(agent->world().ball().pos().x <-40)
             // { 
             //     int p=ClosestPlayerToBall(agent);
@@ -916,6 +975,7 @@ SamplePlayer::executeSampleRole( PlayerAgent * agent )
             //doKick(agent);
             //clearball(this)
             //defencemove(agent);
+            //ClosestPlayerToZone(agent);
         }
         return true;
     };
@@ -1002,9 +1062,13 @@ SamplePlayer::fallback(PlayerAgent * agent){
     //defencemove(agent);
     ClosestPlayerToZone(agent);
     chaseball(agent);
-    
-    //ClosestPlayerToZone(agent);
-    
+    // if(didwecheck)
+    // {
+    // ClosestPlayerToZone(agent);
+    // //defencemove(agent);
+    // std::cout << "player: has called the force kick action and ball cleared ---"<<zoned<<"---------------"<<std::endl;
+    // didwecheck=true;
+    // }
     
     //clearball(agent);
     
@@ -1221,8 +1285,8 @@ SamplePlayer::defencemove(PlayerAgent * agent)
        int player = wm.self().unum();
         
         if (player == 2 || player == 3 || player == 6){
-            // if(agent->world().ourPlayer(player)!=NULL)
-            // {
+            if(agent->world().ourPlayer(player)!=NULL)
+            {
             agent -> world().ourPlayer(player);
             //const Vector2D defense_area &;
             double pos_x;
@@ -1248,15 +1312,15 @@ SamplePlayer::defencemove(PlayerAgent * agent)
                 agent->setNeckAction( new Neck_TurnToBall() );
                 
                 Body_GoToPoint(Vector2D(pos_x,pos_y),1,ServerParam::i().maxDashPower()*(1)).execute(agent);
-                std::cout<<"player is goig to point *********@@@@@@@!!!!!!!!"<<std::endl;
-                Body_TurnToBall().execute( agent );
-        //}
+                //std::cout<<"player is goig to point *********@@@@@@@!!!!!!!!" <<std::endl;
+                //Body_TurnToBall().execute( agent );
+        }
     
 }
         else if(player == 5 || player == 7 || player ==9 || player ==8 ||player ==4|| player == 10 || player == 11){
           //  const Vector2D defense_area & ;
-            // if(agent->world().ourPlayer(player)!=NULL)
-            // {
+            if(agent->world().ourPlayer(player)!=NULL)
+            {
             agent -> world().ourPlayer(player);
             // const ServerParam & SP = ServerParam::i();
             // const double siri =SP.pitchHalfWidth();
@@ -1305,11 +1369,11 @@ SamplePlayer::defencemove(PlayerAgent * agent)
                 agent->setNeckAction( new Neck_TurnToBall() );
                 
                 Body_GoToPoint(Vector2D(pos_x,pos_y),1,ServerParam::i().maxDashPower() *(1)).execute(agent);
-                //std::cout<<"ty Player is goig to point *********@@@@@@@!!!!!!!!"<<std::endl;
-                Body_TurnToBall().execute( agent);
+                std::cout<<"ty Player is goig to point *********@@@@@@@!!!!!!!!"<<std::endl;
+                //Body_TurnToBall().execute( agent);
             
         
-    //}
+    }
         
   }
    } 
@@ -1770,8 +1834,9 @@ SamplePlayer::doPreprocess()
     if ( wm.gameMode().type() == GameMode::BeforeKickOff
          || wm.gameMode().type() == GameMode::AfterGoal_ )
     {
-        //defencemove(agent);
-        //std::cout<<"pre process done!!! "<<std::endl;
+        zoned=true;
+        didwecheck=true;
+        //std::cout<<"pre process done!!! ++++----"<<zoned<<std::endl;
         dlog.addText( Logger::TEAM,
                       __FILE__": before_kick_off" );
         Vector2D move_point =  Strategy::i().getPosition( wm.self().unum() );
