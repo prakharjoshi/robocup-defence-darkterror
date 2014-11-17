@@ -704,7 +704,7 @@ SamplePlayer::ClosestPlayerToZone(PlayerAgent *agent)
     //std::cout<<"rb "<<rb<<"rcb "<<rcb<<"cb "<<cb<<"lcb "<<lcb<<"lb "<<lb<<std::endl;
     if(lb==-1)
         lb=4;
-    if(rb=-1)
+    if(rb==-1)
         rb=5;
     if(rb==rcb && rcb==5)
     {
@@ -716,39 +716,57 @@ SamplePlayer::ClosestPlayerToZone(PlayerAgent *agent)
     {
         cb==6;
     }
+    if(rcb==-1){
+        rcb == 3;
+    }
    
 
     
 std::cout<<"rb "<<rb<<"rcb "<<rcb<<"cb "<<cb<<"lcb "<<lcb<<"lb "<<lb<<std::endl;
- }              
+ }          
+                if(agent-> world().self().unum() != NULL) {   
                 int hummels=agent->world().self().unum();
+
                 if(cb!=-1 && hummels==cb)
-                    {
-                        agent->world().ourPlayer(cb);
+                    {   
+                        if(agent->world().ourPlayer(cb)!=NULL)
+                        {agent->world().ourPlayer(cb);
                    Body_GoToPoint( z3, 0.0, ServerParam::i().maxDashPower()).execute(agent);
-                    }
+                    }}
                 if(rb!=-1 && hummels==rb)
                 {
+                    if(agent->world().ourPlayer(rb)!=NULL)
+                    {
                 agent->world().ourPlayer(rb);
                  Body_GoToPoint( z1, 0.0, ServerParam::i().maxDashPower()).execute(agent);
                 }
-                
+                }
                     if(rcb!=-1 && hummels==rcb)
                     {
-    
+                    if(agent->world().ourPlayer(rcb)!=NULL)
+                    {
                     agent->world().ourPlayer(rcb);
                    Body_GoToPoint( z2, 0.0, ServerParam::i().maxDashPower()).execute(agent);
                }
+           }
                if(lcb!=-1 && hummels==lcb)
                {
+                   if(agent->world().ourPlayer(lcb)!=NULL)
+                  {
                    agent->world().ourPlayer(lcb);
                    Body_GoToPoint( z4, 0.0, ServerParam::i().maxDashPower()).execute(agent);
                 }
+            }
                 if(lb=-1 && hummels==lb)
                 {
+                    if(agent->world().ourPlayer(lb)!=NULL)
+                    {
                 agent->world().ourPlayer(lb);
                Body_GoToPoint( z5, 0.0, ServerParam::i().maxDashPower()).execute(agent);
                 }
+            }
+
+        }
     // std::cout<<"this is the agent selected "<<agent->world().self().unum()<<" "<<std::endl;
 
     //  for(int i=2; i<=11; i++){
