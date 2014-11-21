@@ -1079,6 +1079,7 @@ SamplePlayer::fallback(PlayerAgent * agent){
     //clearball(agent);
     //defencemove(agent);
     ClosestPlayerToZone(agent);
+    //defencemove(agent);
     chaseball(agent);
     // if(didwecheck)
     // {
@@ -1857,9 +1858,11 @@ SamplePlayer::doPreprocess()
         //std::cout<<"pre process done!!! ++++----"<<zoned<<std::endl;
         dlog.addText( Logger::TEAM,
                       __FILE__": before_kick_off" );
+        if(wm.self().unum() != NULL){
         Vector2D move_point =  Strategy::i().getPosition( wm.self().unum() );
         Bhv_CustomBeforeKickOff( move_point ).execute( this );
         this->setViewAction( new View_Tactical() );
+    }
         return true;
     }
 
